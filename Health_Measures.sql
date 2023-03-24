@@ -43,3 +43,9 @@ CREATE TABLE health_measures(
     	STATE_FIPS VARCHAR(2) NOT NULL,
     	COUNTY_FIPS VARCHAR(3) NOT NULL
 );
+
+/*Copying csv into table*/
+COPY health_measures 
+FROM '/tmp/Health_Measures.csv'
+DELIMITER ','
+CSV HEADER;
