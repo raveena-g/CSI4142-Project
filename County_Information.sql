@@ -122,6 +122,6 @@ PRIMARY KEY(county_id)
 
 /*Copying csv into table*/
 COPY county_demographics
-FROM '/Users/raveenagrewal/Documents/Winter 2023/Census_Health_Data.csv'
+FROM '/Users/raveenagrewal/Documents/Winter 2023/County_Information.csv'
 DELIMITER ','
 CSV HEADER;
