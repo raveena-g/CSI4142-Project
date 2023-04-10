@@ -6,7 +6,12 @@ CREATE TABLE wellness_fact (
 	air_key INTEGER REFERENCES air_quality_data(air_quality_id),
     YPLL FLOAT,
     FAIR_POOR_HEALTH NUMERIC(7, 2),
+	PHYSICALLY_UNHEALTHY NUMERIC(7,2),
 	MENTALLY_UNHEALTHY NUMERIC(7, 2),
+	SMOKERS NUMERIC(7,2),
+	OBESE NUMERIC(7,2),
+	DRINKING NUMERIC(7,2),
+	UNEMPLOYED NUMERIC(7,2),
 	UNINSURED NUMERIC(7, 2)
 );
 
@@ -16,17 +21,27 @@ INSERT INTO wellness_fact (
 	county_key,
 	air_key,
 	YPLL,
-	FAIR_POOR_HEALTH,
+    FAIR_POOR_HEALTH,
+	PHYSICALLY_UNHEALTHY,
 	MENTALLY_UNHEALTHY,
+	SMOKERS,
+	OBESE,
+	DRINKING,
+	UNEMPLOYED,
 	UNINSURED
 )
 SELECT
     wd.weather_id AS weather_key,
     c.county_id AS county_key,
 	aq.air_quality_id AS air_key,
-    hm.YPLL,
+	hm.YPLL,
     hm.FAIR_POOR_HEALTH,
+	hm.PHYSICALLY_UNHEALTHY,
 	hm.MENTALLY_UNHEALTHY,
+	hm.SMOKERS,
+	hm.OBESE,
+	hm.DRINKING,
+	hm.UNEMPLOYED,
 	hm.UNINSURED
 FROM
 	health_measures AS hm
