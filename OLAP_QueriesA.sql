@@ -138,3 +138,82 @@
   c.TOT_POP IS NOT NULL
   AND
   c.FIPS IS NOT NULL
+
+/*
+--- Iceberg queries ---
+This finds the top 10 counties with the highest average percentage of smokers over years, 
+where the daily mean PM2.5 air quality measure is above 5 micrograms per cubic meter, 
+and the average temperature is above 70 degrees Fahrenheit. The results are displayed 
+with state name, county name, and the rounded average smokers percentage.
+*/
+SELECT
+  cd.STNAME,
+  cd.CTYNAME,
+  ROUND(AVG(f.SMOKERS), 2) AS average_smokers
+FROM
+  wellness_fact f
+JOIN
+  air_quality_data aqd ON f.air_key = aqd.air_quality_id
+JOIN
+  weather_data wd ON f.weather_key = wd.weather_id
+JOIN
+  county_demographics cd ON f.county_key = cd.county_id
+WHERE
+  aqd.mean_PM2_5_Daily_Mean_mcg_m3_LC > 5
+  AND wd.average_temperature > 70
+  AND f.SMOKERS IS NOT NULL
+GROUP BY
+  cd.STNAME,
+  cd.CTYNAME,
+  cd.FIPS
+ORDER BY average_smokers DESC
+LIMIT 10; 
+
+/*
+--- Windowing queries ---
+This retrieves state name, county name, year, average temperature, 
+average PM2.5 air quality measure, years of potential life lost (YPLL) for each record, 
+the average YPLL for each state and county, and the YPLL rank within each state and county. 
+The data is sourced from the wellness_fact, county_demographics, weather_data, and air_quality_data tables.
+*/
+SELECT
+  cd.STNAME,
+  cd.CTYNAME,
+  wd.year,
+  wd.average_temperature,
+  aqd.mean_PM2_5_Daily_Mean_mcg_m3_LC AS average_pm2_5,
+  f.YPLL,
+  ROUND(CAST(AVG(f.YPLL) OVER (PARTITION BY cd.STNAME, cd.CTYNAME, cd.FIPS) AS NUMERIC), 2) AS average_YPLL,
+  RANK() OVER (PARTITION BY cd.STNAME, cd.CTYNAME, cd.FIPS ORDER BY f.YPLL DESC) AS YPLL_rank
+FROM
+  wellness_fact f
+JOIN
+  county_demographics cd ON f.county_key = cd.county_id
+JOIN
+  weather_data wd ON f.weather_key = wd.weather_id
+JOIN
+  air_quality_data aqd ON f.air_key = aqd.air_quality_id;
+
+/*
+--- Using the Window clause ---
+This gets state name, county name, year, percentage of uninsured, the average uninsured percentage for each state and county, 
+and a combined rank based on the highest average precipitation and daily maximum 8-hour average ozone concentration. 
+The data is sourced from the wellness_fact, county_demographics, weather_data, and air_quality_data tables.
+*/
+SELECT
+  cd.STNAME,
+  cd.CTYNAME,
+  wd.year,
+  f.UNINSURED,
+  ROUND(AVG(f.UNINSURED) OVER county_window, 2) AS average_uninsured,
+  RANK() OVER (ORDER BY wd.average_precipitation DESC, aqd.mean_O3_Daily_max_8H_AVE_ppm DESC) AS combined_rank
+FROM
+  wellness_fact f
+JOIN
+  county_demographics cd ON f.county_key = cd.county_id
+JOIN
+  weather_data wd ON f.weather_key = wd.weather_id
+JOIN
+  air_quality_data aqd ON f.air_key = aqd.air_quality_id
+WINDOW
+  county_window AS (PARTITION BY cd.STNAME, cd.CTYNAME, cd.FIPS);
