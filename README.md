@@ -14,7 +14,7 @@ Xiaoxi Jia, xjia033@uottawa.ca, 300000227
 
 "raw_files" holds raw data files that we obtained from academically reliable resources.
 
-"OLAP_and_Explorative_Operation_Queries.sql" contains all OLAP queries from Phase 3
+"OLAP_and_Explorative_Operation_Queries.sql" contains all OLAP & Explorative Operation queries from Phase 3
 
 "CSI4142_4A.ipynb" contains code for Phase 4 Part A
 
